@@ -27,6 +27,10 @@ func FetchIssues(repo string) ([]Issue, error) {
 	return issueList, nil
 }
 
+func MoveIssues(origin, destination string, issues []Issue) error {
+	return nil
+}
+
 // ModifyPrepend iterates over the given issues and changes their title's to
 // replace or add the prepended string
 func ModifyPrepend(issues []Issue, repo, prepend string) error {
@@ -70,7 +74,7 @@ func parseIssuesToList(issues []byte) ([]Issue, error) {
 // editPrepend removes text prior to the first `:` found in the issueTitle,
 // then prepends the prepend string along with `:`
 func editPrepend(issueTitle, prepend string) string {
-	titleElements := strings.SplitAfterN(issueTitle, ":", 1)
+	titleElements := strings.SplitAfterN(issueTitle, ":", 2)
 
 	var newTitle string
 	if len(titleElements) == 2 { // replace existing prepend

@@ -10,6 +10,7 @@ func TestFetchIssues(t *testing.T) {
 }
 
 func TestModifyPrepend(t *testing.T) {
+
 }
 
 func TestExecIssueList(t *testing.T) {
@@ -53,6 +54,7 @@ func TestEditPrepend(t *testing.T) {
 		expected string
 	}{
 		{"one:Issue title", "two", "two:Issue title"},
+		{"Issue title", "two", "two:Issue title"},
 	}
 
 	for _, param := range params {

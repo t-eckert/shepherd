@@ -22,6 +22,10 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	for _, issue := range issues {
+		log.Printf("Issue #%d\t%s", issue.Number, issue.Title)
+	}
+
 	// Modify the prepend (e.g. helm:) if requested
 	if prepend, ok := command.Flags["modify-prepend"]; ok {
 		// Get user confirmation before proceeding
@@ -39,12 +43,15 @@ func main() {
 		if err != nil {
 			log.Fatalln(err)
 		}
+		for _, issue := range issues {
+			log.Printf("Issue #%d\t%s", issue.Number, issue.Title)
+		}
 
 		log.Printf("Modified %d issues", len(issues))
 	}
 
 	// Get user confirmation before proceeding
-	shouldMigrate := askToContinue(fmt.Sprintf("Migrate %d issues from %s to %s? [y/N] ", len(issues), command.Origin, command.Destination))
+	shouldMigrate := askToContinue(fmt.Sprintf("Migrate %d issues from %s to %s?", len(issues), command.Origin, command.Destination))
 	if !shouldMigrate {
 		safeAbort("Stopping without migrating issues.")
 	}
@@ -61,7 +68,7 @@ func askToContinue(message string) bool {
 	affirmativeResponses := []string{"y", "Y", "yes", "Yes"}
 	var response string
 
-	fmt.Printf(message + " [y/N]")
+	fmt.Printf(message + " [y/N] ")
 	fmt.Scanln(&response)
 
 	for _, affirmativeResponse := range affirmativeResponses {

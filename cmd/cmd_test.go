@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 )
 
@@ -34,12 +33,12 @@ func TestNewCommand(t *testing.T) {
 		},
 		{
 			[]string{"main.go", "organization/origin", "organization/destination", "-p", "prepend"},
-			Command{"organization/origin", "organization/destination", map[string]string{"prepend": "prepend"}},
+			Command{"organization/origin", "organization/destination", map[string]string{"modify-prepend": "prepend"}},
 			nil,
 		},
 		{
 			[]string{"main.go", "organization/origin", "organization/destination", "--modify-prepend", "prepend"},
-			Command{"organization/origin", "organization/destination", map[string]string{"prepend": "prepend"}},
+			Command{"organization/origin", "organization/destination", map[string]string{"modify-prepend": "prepend"}},
 			nil,
 		},
 	}
@@ -47,11 +46,16 @@ func TestNewCommand(t *testing.T) {
 	for _, tt := range params {
 		actualCommand, actualError := NewCommand(tt.given)
 
-		if actualCommand.Origin != tt.expectedCommand.Origin ||
-			actualCommand.Destination != tt.expectedCommand.Destination ||
-			reflect.DeepEqual(actualCommand.Flags, tt.expectedCommand.Flags) {
+		if actualCommand.Origin != tt.expectedCommand.Origin || actualCommand.Destination != tt.expectedCommand.Destination {
 			fmt.Printf("Given: %v\nExpected: %v\nReceived: %v\n", tt.given, tt.expectedCommand, actualCommand)
 			t.Fail()
+		}
+
+		for expectedKey, expectedValue := range tt.expectedCommand.Flags {
+			if actualValue, ok := actualCommand.Flags[expectedKey]; !ok || actualValue != expectedValue {
+				fmt.Printf("Given: %v\nExpected: %v\nReceived: %v\n", tt.given, expectedValue, actualValue)
+				t.Fail()
+			}
 		}
 
 		if actualError != nil && tt.expectedError == nil {
@@ -87,6 +91,10 @@ func TestValidateArgs(t *testing.T) {
 	}
 }
 
+func TestValidateFlags(t *testing.T) {
+
+}
+
 func TestParseFlags(t *testing.T) {
 	params := []struct {
 		given    []string
@@ -94,18 +102,18 @@ func TestParseFlags(t *testing.T) {
 	}{
 		{[]string{"main.go"}, map[string]string{}},
 		{[]string{"main.go", "organization/origin", "organization/destination"}, map[string]string{}},
-		{[]string{"main.go", "organization/origin", "organization/destination", "-p"}, map[string]string{}},
-		{[]string{"main.go", "organization/origin", "organization/destination", "-p", "prepend"}, map[string]string{"prepend": "prepend"}},
-		{[]string{"main.go", "organization/origin", "organization/destination", "--modify-prepend", "prepend"}, map[string]string{"prepend": "prepend"}},
+		{[]string{"main.go", "organization/origin", "organization/destination", "-p", "prepend"}, map[string]string{"modify-prepend": "prepend"}},
+		{[]string{"main.go", "organization/origin", "organization/destination", "--modify-prepend", "prepend"}, map[string]string{"modify-prepend": "prepend"}},
 	}
 
 	for _, tt := range params {
 		actual := parseFlags(tt.given)
 
-		if reflect.DeepEqual(actual, tt.expected) {
-			fmt.Printf("Given: %s Expected: %s Received: %s", tt.given, tt.expected, actual)
-			t.Fail()
+		for expectedKey, expectedValue := range tt.expected {
+			if actualValue, ok := actual[expectedKey]; !ok || actualValue != expectedValue {
+				fmt.Printf("Given: %v\nExpected: %v\nReceived: %v\n", tt.given, expectedValue, actualValue)
+				t.Fail()
+			}
 		}
 	}
 }
-

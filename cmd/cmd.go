@@ -54,7 +54,7 @@ func validateFlags(args []string) error {
 	for i, arg := range args {
 		if flag, ok := validFlags[arg]; arg[0] == '-' && !ok {
 			return fmt.Errorf("unknown flag %s passed", arg)
-		} else if flag.requiresValue && len(args) < i + 2 {
+		} else if flag.requiresValue && len(args) < i+2 {
 			return fmt.Errorf("missing value for flag %s", arg)
 		}
 	}

@@ -10,7 +10,7 @@ type Command struct {
 	// GitHub repository issues will be migrated to
 	Destination string
 
-	// Optional flags passed in
+	// Optional flags
 	Flags map[string]string
 }
 
@@ -51,9 +51,11 @@ func validateArgs(args []string) error {
 }
 
 func validateFlags(args []string) error {
-	for _, arg := range args {
-		if _, ok := validFlags[arg]; arg[0] == '-' && !ok {
+	for i, arg := range args {
+		if flag, ok := validFlags[arg]; arg[0] == '-' && !ok {
 			return fmt.Errorf("unknown flag %s passed", arg)
+		} else if flag.requiresValue && len(args) < i + 2 {
+			return fmt.Errorf("missing value for flag %s", arg)
 		}
 	}
 

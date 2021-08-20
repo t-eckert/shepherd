@@ -23,19 +23,17 @@ func main() {
 	}
 
 	// Modify the prepend (e.g. helm:) if requested
-	if prepend, ok := command.Flags["prepend"]; ok {
+	if prepend, ok := command.Flags["modify-prepend"]; ok {
 		// Get user confirmation before proceeding
-		var shouldPrepend string
-		fmt.Printf("Modify %d issues with prepend `%s:`? [y/N] ", len(issues), prepend)
-		fmt.Scan(&shouldPrepend)
-		if shouldPrepend != "y" || shouldPrepend != "Y" {
-			log.Println("Stopping without modifying issue titles.")
-			os.Exit(0)
+		shouldPrepend := askToContinue(fmt.Sprintf("Modify %d issues with prepend `%s:`?", len(issues), prepend))
+		if !shouldPrepend {
+			safeAbort("Stopping without modifying issue titles.")
 		}
 
 		if err := github.ModifyPrepend(issues, command.Origin, prepend); err != nil {
 			log.Fatalln(err)
 		}
+
 		// Refetch the updated issues
 		issues, err = github.FetchIssues(command.Origin)
 		if err != nil {
@@ -46,15 +44,37 @@ func main() {
 	}
 
 	// Get user confirmation before proceeding
-	var shouldMigrate string
-	fmt.Printf("Migrate %d issues from %s to %s? [y/N] ", len(issues), command.Origin, command.Destination)
-	fmt.Scan(&shouldMigrate)
-	if shouldMigrate != "y" || shouldMigrate != "Y" {
-		log.Fatalln("Stopping without migrating issues.")
+	shouldMigrate := askToContinue(fmt.Sprintf("Migrate %d issues from %s to %s? [y/N] ", len(issues), command.Origin, command.Destination))
+	if !shouldMigrate {
+		safeAbort("Stopping without migrating issues.")
 	}
 
 	if err = github.MoveIssues(command.Origin, command.Destination, issues); err != nil {
 		log.Fatalln(err)
 	}
 	log.Printf("Migrated %d issues from %s to %s.", len(issues), command.Origin, command.Destination)
+}
+
+// askToContinue prompts the user with the given message,
+// if user responds with "y", "Y", "yes", or "Yes", returns true
+func askToContinue(message string) bool {
+	affirmativeResponses := []string{"y", "Y", "yes", "Yes"}
+	var response string
+
+	fmt.Printf(message + " [y/N]")
+	fmt.Scanln(&response)
+
+	for _, affirmativeResponse := range affirmativeResponses {
+		if response == affirmativeResponse {
+			return true
+		}
+	}
+
+	return false
+}
+
+// safeAbort prints the given message then exits the program
+func safeAbort(message string) {
+	log.Println(message)
+	os.Exit(0)
 }

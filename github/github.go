@@ -28,6 +28,12 @@ func FetchIssues(repo string) ([]Issue, error) {
 }
 
 func MoveIssues(origin, destination string, issues []Issue) error {
+	for _, issue := range issues {
+		if err := execTransferIssue(origin, destination, issue.Number); err != nil {
+			return fmt.Errorf("could not transfer Issue %d: %s from %s to %s: %v", issue.Number, issue.Title, origin, destination, err)
+		}
+	}
+
 	return nil
 }
 
@@ -37,7 +43,7 @@ func ModifyPrepend(issues []Issue, repo, prepend string) error {
 	for _, issue := range issues {
 		newTitle := editPrepend(issue.Title, prepend)
 		if err := execEditIssueTitle(repo, issue.Number, newTitle); err != nil {
-			return fmt.Errorf("could not rename issue %d to %s", issue.Number, newTitle)
+			return fmt.Errorf("could not rename issue %d to %s: %v", issue.Number, newTitle, err)
 		}
 	}
 
@@ -46,7 +52,7 @@ func ModifyPrepend(issues []Issue, repo, prepend string) error {
 
 // execIssueList uses the GitHub CLI to return a list of issues
 func execIssueList(repo string) ([]byte, error) {
-	output, err := exec.Command("gh", "issue", "list", "--json", "\"number,title\"", "-R", repo).Output()
+	output, err := exec.Command("gh", "issue", "list", "--json", "number,title", "-R", repo).Output()
 	if err != nil {
 		return output, err
 	}
@@ -56,7 +62,17 @@ func execIssueList(repo string) ([]byte, error) {
 
 // execEditIssueTitle uses the GitHub CLI to change the title of a given issue to the given new title
 func execEditIssueTitle(repo string, number int, newTitle string) error {
-	exec.Command("gh", "issue", "-R", repo)
+	if output, err := exec.Command("gh", "issue", "edit", fmt.Sprint(number), "--title", newTitle, "-R", repo).Output(); err != nil {
+		return fmt.Errorf("%v: %s", err, output)
+	}
+
+	return nil
+}
+
+func execTransferIssue(origin, destination string, number int) error {
+	if output, err := exec.Command("gh", "issue", "transfer", fmt.Sprint(number), destination, "-R", origin).Output(); err != nil {
+		return fmt.Errorf("%v: %s", err, output)
+	}
 
 	return nil
 }

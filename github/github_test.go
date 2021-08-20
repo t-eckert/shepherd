@@ -48,10 +48,10 @@ func TestParseIssuesToList(t *testing.T) {
 }
 
 func TestEditPrepend(t *testing.T) {
-	params := []struct{
+	params := []struct {
 		givenIssueTitle string
-		givenPrepend string
-		expected string
+		givenPrepend    string
+		expected        string
 	}{
 		{"one:Issue title", "two", "two:Issue title"},
 		{"Issue title", "two", "two:Issue title"},

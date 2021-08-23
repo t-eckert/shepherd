@@ -40,6 +40,7 @@ func NewCommand(args []string) (Command, error) {
 	return Command{origin, destination, flags}, nil
 }
 
+// validateArgs checks that 2 args were passed in, an origin and a destinatinon repository
 func validateArgs(args []string) error {
 	if len(args) == 1 {
 		return fmt.Errorf("missing argument for origin repository")
@@ -50,6 +51,7 @@ func validateArgs(args []string) error {
 	return nil
 }
 
+// validateFlags checks that any flags passed in are formatted correctly and are valid
 func validateFlags(args []string) error {
 	for i, arg := range args {
 		if flag, ok := validFlags[arg]; arg[0] == '-' && !ok {
@@ -62,6 +64,7 @@ func validateFlags(args []string) error {
 	return nil
 }
 
+// parseFlags iterates over flags passed in and resolves them to a map
 func parseFlags(args []string) map[string]string {
 	flags := make(map[string]string)
 	for i, arg := range args {
@@ -76,6 +79,8 @@ func parseFlags(args []string) map[string]string {
 	return flags
 }
 
+// resolveFlag checks if a flag is a short flag and resolves it to its long flag format:
+// -p will return --modify-prepend
 func resolveFlag(flag string) string {
 	if alias := validFlags[flag].alias; alias != "" {
 		flag = alias

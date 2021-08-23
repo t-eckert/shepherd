@@ -7,8 +7,12 @@ import (
 	"strings"
 )
 
+// Issue represents a GitHub issue
 type Issue struct {
+	// Unique id number for the GitHub issue
 	Number int
+
+	// Title for the GitHub issue
 	Title  string
 }
 
@@ -27,6 +31,7 @@ func FetchIssues(repo string) ([]Issue, error) {
 	return issueList, nil
 }
 
+// MoveIssues iterates over the given issues and reparents them from the origin repository to the destination repository
 func MoveIssues(origin, destination string, issues []Issue) error {
 	for _, issue := range issues {
 		if err := execTransferIssue(origin, destination, issue.Number); err != nil {
@@ -37,8 +42,7 @@ func MoveIssues(origin, destination string, issues []Issue) error {
 	return nil
 }
 
-// ModifyPrepend iterates over the given issues and changes their title's to
-// replace or add the prepended string
+// ModifyPrepend iterates over the given issues and changes their titles to replace or add the prepended string
 func ModifyPrepend(issues []Issue, repo, prepend string) error {
 	for _, issue := range issues {
 		newTitle := editPrepend(issue.Title, prepend)
@@ -69,6 +73,7 @@ func execEditIssueTitle(repo string, number int, newTitle string) error {
 	return nil
 }
 
+// execTransferIssue uses the GitHub CLI to reparent the issue from the origin repository to the destination repository
 func execTransferIssue(origin, destination string, number int) error {
 	if output, err := exec.Command("gh", "issue", "transfer", fmt.Sprint(number), destination, "-R", origin).Output(); err != nil {
 		return fmt.Errorf("%v: %s", err, output)
@@ -87,8 +92,7 @@ func parseIssuesToList(issues []byte) ([]Issue, error) {
 	return issueList, nil
 }
 
-// editPrepend removes text prior to the first `:` found in the issueTitle,
-// then prepends the prepend string along with `:`
+// editPrepend removes text prior to the first `:` found in the issueTitle, then prepends the prepend string along with `:`
 func editPrepend(issueTitle, prepend string) string {
 	titleElements := strings.SplitAfterN(issueTitle, ":", 2)
 

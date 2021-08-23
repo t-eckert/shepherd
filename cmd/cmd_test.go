@@ -92,7 +92,28 @@ func TestValidateArgs(t *testing.T) {
 }
 
 func TestValidateFlags(t *testing.T) {
+	params := []struct {
+		given    []string
+		expected error
+	}{
+		{[]string{"main.go"}, nil},
+		{[]string{"main.go", "organization/origin", "organization/destination", "-p"}, fmt.Errorf("missing value for flag -p")},
+		{[]string{"main.go", "organization/origin", "organization/destination", "-x"}, fmt.Errorf("unknown flag -x passed")},
+		{[]string{"main.go", "organization/origin", "organization/destination", "-p", "prepend"}, nil},
+		{[]string{"main.go", "organization/origin", "organization/destination", "--modify-prepend", "prepend"}, nil},
+	}
 
+	for _, tt := range params {
+		actual := validateFlags(tt.given)
+
+		if actual != nil && tt.expected == nil {
+			fmt.Printf("No error expected. Received error %s", actual)
+			t.Fail()
+		} else if actual == nil && tt.expected != nil {
+			fmt.Printf("Error expected %s. No error received.", tt.expected)
+			t.Fail()
+		}
+	}
 }
 
 func TestParseFlags(t *testing.T) {

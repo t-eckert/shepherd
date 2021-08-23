@@ -5,14 +5,6 @@ import (
 	"testing"
 )
 
-func TestFetchIssues(t *testing.T) {
-
-}
-
-func TestModifyPrepend(t *testing.T) {
-
-}
-
 func TestExecIssueList(t *testing.T) {
 	repo := "t-eckert/shepherd"
 

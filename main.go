@@ -28,6 +28,11 @@ func main() {
 
 	// Modify the prepend (e.g. helm:) if requested
 	if prepend, ok := command.Flags["modify-prepend"]; ok {
+		// Remove `:` at the end of prepend if user passed it in by accident
+		if prepend[len(prepend) - 1:] == ":" {
+			prepend = prepend[0:len(prepend) - 1]
+		}
+
 		// Get user confirmation before proceeding
 		shouldPrepend := askToContinue(fmt.Sprintf("Modify %d issues with prepend `%s:`?", len(issues), prepend))
 		if !shouldPrepend {
